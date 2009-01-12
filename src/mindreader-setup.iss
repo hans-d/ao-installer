@@ -1,6 +1,7 @@
 ; Jan 1, 09 - First version, by Hans.Donner@pobox.com
-; Jan 4, 09 - added PrivilegesRequired = none to prevent required Admin rights (not yet neede)
+; Jan 4, 09 - added PrivilegesRequired = none to prevent required Admin rights (not yet needed)
 ; - adding comments
+; Jan 12, 09 - show license, warning and install to AO (
 
 ; uses http://www.vincenzo.net/isxkb/index.php?title=PSVince to detect running files
 
@@ -25,7 +26,6 @@ AppPublisherURL={#AppURL}
 AppSupportURL={#AppURL}
 AppUpdatesURL={#AppURL}
 
-// TODO: change to AO? (but keep in mind the .. files=
 DefaultDirName=''
 DefaultGroupName={#AppName}
 // TODO: add program group with links=
@@ -66,172 +66,183 @@ Name: gyroQ; Description: REPLACE GiroQ tags with MindReader default setup
 Source: psvince.dll; Flags: dontcopy
 
 ; all the other files
-Source: {#AppSourceDirMindReader}\\*; DestDir: {app}; Flags: ignoreversion recursesubdirs createallsubdirs; Components: main
-Source: {#AppSourceDirMindReaderLegacy}\\*; DestDir: {app}\\..; skipifsourcedoesntexist Flags: ignoreversion recursesubdirs createallsubdirs; Components: main
+; specify locations in the variables (config file)
+Source: {#AppSourceDirMindReader}\\*; DestDir: {app}; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: {#AppSourceDirMindReaderLegacy}\\*; DestDir: {app}\\..; Components: main; Flags: skipifsourcedoesntexist ignoreversion recursesubdirs createallsubdirs
+Source: {#AppSourceDirMindReaderConfig}\\*; DestDir: {app}; Components: config; Flags: skipifsourcedoesntexist ignoreversion recursesubdirs createallsubdirs onlyifdoesntexist uninsneveruninstall
+Source: {#AppSourceDirMindReaderConfigLegacy}\\*; DestDir: {app}\\..; Components: config; Flags: skipifsourcedoesntexist ignoreversion recursesubdirs createallsubdirs onlyifdoesntexist uninsneveruninstall
+Source: {#AppSourceDirMindReaderSample}\\*; DestDir: {app}; Components: sample; Flags: skipifsourcedoesntexist ignoreversion recursesubdirs createallsubdirs
+Source: {#AppSourceDirMindReaderSampleLegacy}\\*; DestDir: {app}\\..; Components: sample; Flags: skipifsourcedoesntexist ignoreversion recursesubdirs createallsubdirs
+Source: {#AppSourceDirGyroQConfig}\\*; DestDir: {app}\\..; Tasks: gyroQ; Flags: ignoreversion recursesubdirs createallsubdirs uninsneveruninstall
 
-Source: {#AppSourceDirMindReaderConfig}\\*; DestDir: {app}; Flags: skipifsourcedoesntexist ignoreversion recursesubdirs createallsubdirs onlyifdoesntexist uninsneveruninstall; Components: config
-Source: {#AppSourceDirMindReaderConfigLegacy}\\*; DestDir: {app}\\..; Flags: skipifsourcedoesntexist ignoreversion recursesubdirs createallsubdirs onlyifdoesntexist uninsneveruninstall; Components: config
-
-Source: {#AppSourceDirMindReaderSample}\\*; DestDir: {app}; Flags: skipifsourcedoesntexist ignoreversion recursesubdirs createallsubdirs; Components: sample
-Source: {#AppSourceDirMindReaderSampleLegacy}\\*; DestDir: {app}\\..; Flags: skipifsourcedoesntexist ignoreversion recursesubdirs createallsubdirs; Components: sample
-
-Source: {#AppSourceDirGyroQConfig}\\*; DestDir: {app}; Flags: ignoreversion recursesubdirs createallsubdirs uninsneveruninstall; Tasks: gyroQ
-
+// TODO: 
 // Use registry for correct placing of GyroQ ini file: 
 // HKCU | Software\Gyronix\GyroQ\Settings | WkgDir: 
+// {code: ...}
 
 
 [Code]
-// As this is Pascal scripting, procedures/functions must
-// first be declared/defined before they can be called!
+{
+ As this is Pascal scripting, procedures/functions must
+ first be declared/defined before they can be called!
+}
 
 function IsModuleLoaded(modulename: String ):  Boolean;
   external 'IsModuleLoaded@files:psvince.dll stdcall';
   // from http://www.vincenzo.net/isxkb/index.php?title=PSVince
 
 var
-
-// Custom Wizard Pages
+{ Custom Wizard Pages
+}
   MmVersionPage: TInputOptionWizardPage;
   ConfirmDirPage: TInputDirWizardPage;
 
-// MmVersionIndexes
-  // keep in sync with other MmVersion functions/procedures/constants
-  // values are set in CreateMmVersionPage
-  // used for 'translation'
-  MmVersionIndex7,
-  MmVersionIndex8,
-  MmVersionIndexUnknown: Integer;
+{ MmVersion_Indexes
+  - keep in sync with other MmVersion functions/procedures/constants
+  - values are set in CreateMmVersionPage
+  - used for 'translation'
+}
+  MmVersion_Index7,
+  MmVersion_Index8,
+  MmVersion_IndexUnknown: Integer;
 
 const
-// TODO: rename to UPPERCASE_UNDERSCORE
+{ Tasks used
+  - keep in sync with previous sections
+}
+  TASK_GYROQ = 'gyroQ';
 
-  DEFAULT_AO_DIR = 'AO';
+{ DataKey
+  - Used for storing in registry
+}
+  DATAKEY_MMVERSION = 'MindManager';
 
-// Tasks used
-  TaskGyroQ = 'gyroQ';
+{ MmVersion String
+  - keep in synch with other MmVersion functions/procedures/variables
+  - used for 'translation', and stored in registry (thus change with caution)
+}
+  MMVERSION_STRING7 = '7';
+  MMVERSION_STRING8 = '8';
+  MMVERSION_STRING_UNKNOWN = '';
 
-// DataKey
-  // Used for storing in registry
-  DataKeyMmVersion = 'MindManager';
+{ Running
+  - names of apps that can be running and maybe have to be closed
+}
+  RUNNING_GYROQ = 'GyroQ.exe';
 
-// MmVersionString
-  // keep in synch with other MmVersion functions/procedures/variables
-  // used for 'translation', and stored in registry (thus change with caution)
-  MmVersionString7 = '7';
-  MmVersionString8 = '8';
-  MmVersionStringUnknown = '';
+{ Various
+}
+  DIR_UNKNOWN = '';
+  DIR_AO_DEAFULT = 'AO';
 
-// Running
-  // names of apps that can be running and maybe have to be closed
-  RunningGyroQ = 'GyroQ.exe';
-
-// Various
-  DirUnknown = '';
-
-
-
-// ==========
-// Running Apps
-// ==========
-
+{ ==========
+  Running Apps
+  ==========
+}
 function AllAppsClosed(): Boolean;
-// Check if all related apps are not running
+{ Check if all related apps are not running
+}
 begin
-  Result := Not(IsTaskSelected(taskGyroQ) And IsModuleLoaded(RunningGyroQ));
+  Result := Not(IsTaskSelected(TASK_GYROQ) And IsModuleLoaded(RUNNING_GYROQ));
 end;
 
-// ==========
-// MmVersion
-// ==========
-
-function TranslateMmVersionString(VersionString: String): Integer;
-// Converts from the registry stored value to the Wizard page option index
-  // keep in synch with other MmVersion function/procedures
+{ ==========
+  MmVersion
+  ==========
+}
+function TranslateMMVERSION_STRING(VersionString: String): Integer;
+{ Converts from the registry stored value to the Wizard page option index
+  - keep in synch with other MmVersion function/procedures
+}
 begin
   case VersionString of
-    MmVersionString7: Result := MmVersionIndex7;
-    MmVersionString8: Result := MmVersionIndex8;
+    MMVERSION_STRING7: Result := MmVersion_Index7;
+    MMVERSION_STRING8: Result := MmVersion_Index8;
   else
-    Result := MmVersionIndexUnknown;
+    Result := MmVersion_IndexUnknown;
   end;
 end;
 
-function TranslateMmVersionIndex(VersionIndex: Integer): String;
-// Converts from the Wizard page option index to the registry stored value
-  // keep in synch with other MmVersion function/procedures
+function TranslateMmVersion_Index(VersionIndex: Integer): String;
+{ Converts from the Wizard page option index to the registry stored value
+  - keep in synch with other MmVersion function/procedures
+}
 begin
   case VersionIndex of
-    MmVersionIndex7: Result := MmVersionString7;
-    MmVersionIndex8: Result := MmVersionString8;
+    MmVersion_Index7: Result := MMVERSION_STRING7;
+    MmVersion_Index8: Result := MMVERSION_STRING8;
   else
-    Result := MmVersionStringUnknown;
+    Result := MMVERSION_STRING_UNKNOWN;
   end;
 end;
 
 function GuessMmVersion(): string;
-// Tries to guess what Mm version is running
+{ Tries to guess what Mm version is running
+}
 var
   GyroActivatorPathKeyName,
   GyroActivatorPathValueName,
   MmVersion: String;
 begin
-  // TODO: move to Const?
   GyroActivatorPathKeyName := 'Software\Gyronix\GyroActivator\Settings';
   GyroActivatorPathValueName := 'MindManager';
 
   if not RegQueryStringValue(HKCU, GyroActivatorPathKeyName, GyroActivatorPathValueName, MmVersion) then begin
-    MmVersion := MmVersionStringUnknown;
+    MmVersion := MMVERSION_STRING_UNKNOWN;
   end;
 
   Result := MmVersion;
 end;
 
 procedure CreateMmVersionPage;
-// Keep in synch with other MmVersion function/procedures
+{ Keep in synch with other MmVersion function/procedures
+}
 begin
   MmVersionPage := CreateInputOptionPage(wpUserInfo,
     'MindManager Version', 'What version of MindManager are you using?',
     'Please specify what version of MindManager you are using, then click Next.',
     True, False);
 
-  // Number MmVersionIndex.. sequentially, starting at 0
+  // Number MmVersion_Index.. sequentially, starting at 0
 
   MmVersionPage.Add('MindManager v7');
-  MmVersionIndex7 := 0;
+  MmVersion_Index7 := 0;
 
   MmVersionPage.Add('MindManager v8');
-  MmVersionIndex8 := 1;
+  MmVersion_Index8 := 1;
 
   MmVersionPage.Add('Unknown/Not listed here (not supported)');
-  MmVersionIndexUnknown := 2;
+  MmVersion_IndexUnknown := 2;
 
-  MmVersionPage.SelectedValueIndex := TranslateMmVersionString(GetPreviousData (DataKeyMmVersion,GuessMmVersion()));
+  MmVersionPage.SelectedValueIndex := TranslateMMVERSION_STRING(GetPreviousData (DATAKEY_MMVERSION,GuessMmVersion()));
 end;
 
-// ==========
-
+{ ==========
+  ConfirmDir / SelectDir
+  ==========
+}
 function getMyMapsDir(): String;
-// Tries to guess where the install must be done
+{ Tries to guess where the install must be done
+}
 var
   MindjetPathKeyName,
   MindjetPathValueName,
   DocDir: String;
 begin
-  // TODO: move to Const?
-  // TODO: create function for replacement?
   MindjetPathKeyName := 'Software\Mindjet\MindManager\'
-    + TranslateMmVersionIndex(MmVersionPage.SelectedValueIndex) + '\Settings';
+    + TranslateMmVersion_Index(MmVersionPage.SelectedValueIndex) + '\Settings';
   MindjetPathValueName := 'DocumentDirectory';
 
   if not RegQueryStringValue(HKCU, MindjetPathKeyName, MindjetPathValueName, DocDir) then begin
-    DocDir := DirUnknown;
+    DocDir := DIR_UNKNOWN;
   end;
 
   Result := DocDir;
 end;
 
 procedure createConfirmDirPage;
+{ Confirm MyMaps locations
+}
 begin
   ConfirmDirPage := CreateInputDirPage(MmVersionPage.ID,
     'Confirm MyMaps Directory', 'Is this the location of your MyMaps Directory?',
@@ -246,34 +257,41 @@ begin
 end;
 
 procedure UpdateSelectDirPage;
+{ Adjust SelectDir
+}
 begin
   // Adjust labels
   WizardForm.SelectDirLabel.Caption := 'If you specify another folder as the MyMaps\'
-    + DEFAULT_AO_DIR + ' folder, AO will not work!.'
+    + DIR_AO_DEAFULT + ' folder, AO will not work!.'
 
   // Set Default value
-  WizardForm.DirEdit.Text := addbackslash(ConfirmDirPage.Values[0]) + DEFAULT_AO_DIR;
+  WizardForm.DirEdit.Text := addbackslash(ConfirmDirPage.Values[0]) + DIR_AO_DEAFULT;
 end;
 
-// ==========
-// INNO Event procedures/functions
-//   see INNO help for additional information
-// ==========
-
+{ ==========
+  INNO Event procedures/functions
+    see INNO help for additional information
+ ==========
+}
 procedure InitializeWizard;
+{ Init
+}
 begin
-
   // Create additional wizard pages
-	CreateMmVersionPage;
-    CreateConfirmDirPage;
+  CreateMmVersionPage;
+  CreateConfirmDirPage;
 end;
 
 procedure RegisterPreviousData(PreviousDataKey: Integer);
+{ Store previous data used by installer
+}
 begin
-  SetPreviousData(PreviousDataKey, DataKeyMmVersion, TranslateMmVersionIndex(MmVersionPage.SelectedValueIndex));
+  SetPreviousData(PreviousDataKey, DATAKEY_MMVERSION, TranslateMmVersion_Index(MmVersionPage.SelectedValueIndex));
 end;
 
 function NextButtonClick(CurPageID: Integer): Boolean;
+{ Can we continue to the next page?
+}
 begin
   // By default continue to next page
   Result := True;
@@ -283,7 +301,7 @@ begin
 
   // MmVersion is unknown
     MmVersionPage.ID:
-      if MmVersionPage.SelectedValueIndex = MmVersionIndexUnknown then begin
+      if MmVersionPage.SelectedValueIndex = MmVersion_IndexUnknown then begin
           Result := False;
           MsgBox('Only the listed version of MindManager are supported' #13#13
             'Please select one of the listed versions or Cancel thet setup.', mbInformation, MB_OK);
@@ -303,6 +321,8 @@ begin
 end;
 
 procedure CurPageChanged(CurPageID: Integer);
+{ Do some page updates
+}
 begin
   case CurPageID of
     wpSelectDir:
@@ -310,11 +330,17 @@ begin
   end;
 end;
 
-// ==========
-// for debug purposes
-  // write out the 'true' story
-  // must be at the end of all coding to give a complete file
+// TODO:
+// Use registry for correct placing of GyroQ ini file:
+// HKCU | Software\Gyronix\GyroQ\Settings | WkgDir:
+// {code: ...}
 
+
+{ ==========
+  for debug purposes
+  - write out the 'true' story
+  - must be at the end of all coding to give a complete file
+}
 #ifdef Debug
   #expr SaveToFile(AddBackslash(SourcePath) + "Preprocessed.iss")
 #endif
