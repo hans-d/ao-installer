@@ -1,7 +1,8 @@
 ; Jan 1, 09 - First version, by Hans.Donner@pobox.com
 ; Jan 4, 09 - added PrivilegesRequired = none to prevent required Admin rights (not yet needed)
 ; - adding comments
-; Jan 12, 09 - show license, warning and install to AO (
+; Jan 12, 09 - show license, warning and install to AO
+; Jan 16, 09 - spelling and correct GyroQ
 
 ; uses http://www.vincenzo.net/isxkb/index.php?title=PSVince to detect running files
 
@@ -58,7 +59,7 @@ Name: sample; Description: MindReader Sample Map; Types: Full
 
 [Tasks]
 ; additional stuff to do
-Name: gyroQ; Description: REPLACE GiroQ tags with MindReader default setup
+Name: gyroQ; Description: REPLACE GyroQ tags with MindReader default setup
 
 [Files]
 ; the actual files used in the setup process
@@ -73,7 +74,7 @@ Source: {#AppSourceDirMindReaderConfig}\\*; DestDir: {app}; Components: config; 
 Source: {#AppSourceDirMindReaderConfigLegacy}\\*; DestDir: {app}\\..; Components: config; Flags: skipifsourcedoesntexist ignoreversion recursesubdirs createallsubdirs onlyifdoesntexist uninsneveruninstall
 Source: {#AppSourceDirMindReaderSample}\\*; DestDir: {app}; Components: sample; Flags: skipifsourcedoesntexist ignoreversion recursesubdirs createallsubdirs
 Source: {#AppSourceDirMindReaderSampleLegacy}\\*; DestDir: {app}\\..; Components: sample; Flags: skipifsourcedoesntexist ignoreversion recursesubdirs createallsubdirs
-Source: {#AppSourceDirGyroQConfig}\\*; DestDir: {app}\\..; Tasks: gyroQ; Flags: ignoreversion recursesubdirs createallsubdirs uninsneveruninstall
+Source: {#AppSourceDirGyroQConfig}\\*; DestDir: {app}\\..\GyroQ; Tasks: gyroQ; Flags: ignoreversion recursesubdirs createallsubdirs uninsneveruninstall
 
 // TODO: 
 // Use registry for correct placing of GyroQ ini file: 
