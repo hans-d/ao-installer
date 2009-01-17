@@ -150,10 +150,24 @@ const
 }
   RUNNING_GYROQ = 'GyroQ.exe';
 
+{ Registry settings for lookup
+}
+  REG_GYRONIX_ACTIVATOR_SETTINGS_PATH = 'Software\Gyronix\GyroActivator\Settings';
+  REG_GYRONIX_ACTIVATOR_SETTINGS_MINDMANGER = 'MindManager';
+
+  REG_MINDJET_SETTINGS_PREFIX_PATH = 'Software\Mindjet\MindManager\';
+  REG_MINDJET_SETTINGS_SUFFIX_PATH = '\Settings';
+  REG_MINDJET_SETTINGS_DOCUMENTDIRECTORY = 'DocumentDirectory';
+
 { Various
 }
   DIR_UNKNOWN = '';
   DIR_AO_DEAFULT = 'AO';
+
+// TODO:
+// - check for RM
+// - check for GyroQ
+// - rerun GyroQ
 
 { ==========
   Running Apps
@@ -202,15 +216,12 @@ function GuessMmVersion(): string;
 { Tries to guess what Mm version is running
 }
 var
-  GyroActivatorPathKeyName,
-  GyroActivatorPathValueName,
   MmVersion: String;
 begin
-  GyroActivatorPathKeyName := 'Software\Gyronix\GyroActivator\Settings';
-  GyroActivatorPathValueName := 'MindManager';
-
-  if not RegQueryStringValue(HKCU, GyroActivatorPathKeyName, GyroActivatorPathValueName, MmVersion) then begin
-    MmVersion := MMVERSION_STRING_UNKNOWN;
+  if not RegQueryStringValue(HKCU,
+    REG_GYRONIX_ACTIVATOR_SETTINGS_PATH, REG_GYRONIX_ACTIVATOR_SETTINGS_MINDMANGER,
+    MmVersion) then begin
+      MmVersion := MMVERSION_STRING_UNKNOWN;
   end;
 
   Result := MmVersion;
@@ -251,15 +262,16 @@ function getMyMapsDir(): String;
 }
 var
   MindjetPathKeyName,
-  MindjetPathValueName,
   DocDir: String;
 begin
-  MindjetPathKeyName := 'Software\Mindjet\MindManager\'
-    + TranslateMmVersion_Index(MmVersionPage.SelectedValueIndex) + '\Settings';
-  MindjetPathValueName := 'DocumentDirectory';
+  MindjetPathKeyName := REG_MINDJET_SETTINGS_PREFIX_PATH
+    + TranslateMmVersion_Index(MmVersionPage.SelectedValueIndex)
+    + REG_MINDJET_SETTINGS_SUFFIX_PATH;
 
-  if not RegQueryStringValue(HKCU, MindjetPathKeyName, MindjetPathValueName, DocDir) then begin
-    DocDir := DIR_UNKNOWN;
+  if not RegQueryStringValue(HKCU,
+    MindjetPathKeyName, REG_MINDJET_SETTINGS_DOCUMENTDIRECTORY,
+    DocDir) then begin
+      DocDir := DIR_UNKNOWN;
   end;
 
   Result := DocDir;
@@ -294,10 +306,6 @@ procedure UpdateSelectDirPage;
 { Adjust SelectDir
 }
 begin
-  // Adjust labels
-//  WizardForm.SelectDirLabel.Caption := 'If you specify another folder as the MyMaps\'
-//    + DIR_AO_DEAFULT + ' folder, AO will not work!.'
-
   // Set Default value
   WizardForm.DirEdit.Text := addbackslash(ConfirmDirPage.Values[0]) + DIR_AO_DEAFULT;
 
