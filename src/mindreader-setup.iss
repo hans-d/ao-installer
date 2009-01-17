@@ -1,10 +1,24 @@
-; Jan 1, 09 - First version, by Hans.Donner@pobox.com
-; Jan 4, 09 - added PrivilegesRequired = none to prevent required Admin rights (not yet needed)
-; - adding comments
-; Jan 12, 09 - show license, warning and install to AO
-; Jan 16, 09 - spelling and correct GyroQ
+; AO Installer
+;   see www.activityowner.com for the AO Tools
+
+; History:
+; Jan 17, 09 - Hans.Donner@pobox.com
+;   - add MM 6 support
+;   - fixed a 'sleeping' bug regarding moment of version checking
+;   - checks if MyMaps can be found
+; Jan 16, 09 - Hans.Donner@pobox.com
+;   - spelling and correct GyroQ
+; Jan 12, 09 - Hans.Donner@pobox.com
+;   - show license, warning and install to AO
+; Jan 4, 09 - Hans.Donner@pobox.com
+;   - added PrivilegesRequired = none to prevent required Admin rights (not yet needed)
+;   - adding comments
+; Jan 1, 09 - Hans.Donner@pobox.com
+;   - First version
 
 ; uses http://www.vincenzo.net/isxkb/index.php?title=PSVince to detect running files
+
+; ======
 
 ; seperate installer logic from installer configuration (where to find stuff etc.)
 #include "mindreader-setup-config.iss"
@@ -45,6 +59,9 @@ PrivilegesRequired=none
 [Languages]
 ; currently only available in 1 language
 Name: english; MessagesFile: compiler:Default.isl
+
+[Messages]
+SelectDirBrowseLabel=This is a fixed location (AO) under your MyMaps folder.
 
 [Types]
 ; provide packages to choose from; these have default components (see below)
@@ -103,6 +120,7 @@ var
   - values are set in CreateMmVersionPage
   - used for 'translation'
 }
+  MmVersion_Index6,
   MmVersion_Index7,
   MmVersion_Index8,
   MmVersion_IndexUnknown: Integer;
@@ -122,6 +140,7 @@ const
   - keep in synch with other MmVersion functions/procedures/variables
   - used for 'translation', and stored in registry (thus change with caution)
 }
+  MMVERSION_STRING6 = '6';
   MMVERSION_STRING7 = '7';
   MMVERSION_STRING8 = '8';
   MMVERSION_STRING_UNKNOWN = '';
@@ -157,6 +176,7 @@ function TranslateMMVERSION_STRING(VersionString: String): Integer;
 }
 begin
   case VersionString of
+    MMVERSION_STRING6: Result := MmVersion_Index6;
     MMVERSION_STRING7: Result := MmVersion_Index7;
     MMVERSION_STRING8: Result := MmVersion_Index8;
   else
@@ -170,6 +190,7 @@ function TranslateMmVersion_Index(VersionIndex: Integer): String;
 }
 begin
   case VersionIndex of
+    MmVersion_Index6: Result := MMVERSION_STRING6;
     MmVersion_Index7: Result := MMVERSION_STRING7;
     MmVersion_Index8: Result := MMVERSION_STRING8;
   else
@@ -206,14 +227,17 @@ begin
 
   // Number MmVersion_Index.. sequentially, starting at 0
 
+  MmVersionPage.Add('MindManager v6');
+  MmVersion_Index6 := 0;
+
   MmVersionPage.Add('MindManager v7');
-  MmVersion_Index7 := 0;
+  MmVersion_Index7 := MmVersion_Index6 + 1; // reference to previous
 
   MmVersionPage.Add('MindManager v8');
-  MmVersion_Index8 := 1;
+  MmVersion_Index8 := MmVersion_Index7 + 1; // reference to previous
 
   MmVersionPage.Add('Unknown/Not listed here (not supported)');
-  MmVersion_IndexUnknown := 2;
+  MmVersion_IndexUnknown := MmVersion_Index8 + 1; // reference to previous;
 
   MmVersionPage.SelectedValueIndex := TranslateMMVERSION_STRING(GetPreviousData (DATAKEY_MMVERSION,GuessMmVersion()));
 end;
@@ -241,6 +265,17 @@ begin
   Result := DocDir;
 end;
 
+function CheckMyMapsDir(): Boolean;
+{ Check if we really have a MyMap dir
+  Also sets the ConfirmDirPage
+}
+begin
+  Result := False;
+  ConfirmDirPage.Values[0] := getMyMapsDir;
+  if ConfirmDirPage.Values[0] <> DIR_UNKNOWN then
+    Result := True;
+end;
+
 procedure createConfirmDirPage;
 { Confirm MyMaps locations
 }
@@ -253,8 +288,6 @@ begin
 
   ConfirmDirPage.Add('To continue, click Next. If you would like to select a different folder, click Browse.');
 
-  ConfirmDirPage.Values[0] := getMyMapsDir;
-
 end;
 
 procedure UpdateSelectDirPage;
@@ -262,11 +295,18 @@ procedure UpdateSelectDirPage;
 }
 begin
   // Adjust labels
-  WizardForm.SelectDirLabel.Caption := 'If you specify another folder as the MyMaps\'
-    + DIR_AO_DEAFULT + ' folder, AO will not work!.'
+//  WizardForm.SelectDirLabel.Caption := 'If you specify another folder as the MyMaps\'
+//    + DIR_AO_DEAFULT + ' folder, AO will not work!.'
 
   // Set Default value
   WizardForm.DirEdit.Text := addbackslash(ConfirmDirPage.Values[0]) + DIR_AO_DEAFULT;
+
+  // hide the Browse button
+  WizardForm.DirBrowseButton.Visible := false;
+
+  // Edit box for folder is non-editable
+  WizardForm.DirEdit.Enabled := false;
+
 end;
 
 { ==========
@@ -306,7 +346,12 @@ begin
           Result := False;
           MsgBox('Only the listed version of MindManager are supported' #13#13
             'Please select one of the listed versions or Cancel thet setup.', mbInformation, MB_OK);
-      end;
+      end else
+        if Not CheckMyMapsDir then begin
+          Result := False;
+          MsgBox('Could not locate information for the selected MindManager version!' #13#13
+			'Please select an installed version.', mbError, MB_OK);
+        end;
 
   // Apps are running that must be closed down first
   // TODO: setup to re-start them?
