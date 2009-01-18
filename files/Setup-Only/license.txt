@@ -1,1 +1,5 @@
-This Software is covered under a Creative Commons Attribution-Noncommercial-No derivative works 3.0 (http://creativecommons.org/licenses/by-nc-nd/3.0/) licence. See link for details. Restriction can be waived by contacting info@activityowner.com.  
+This Software is protected under a Creative Commons, Attribution-Noncommercial-No Derivative Works 3.0 Unported license. See the following link for details:
+
+http://creativecommons.org/licenses/by-nc-nd/3.0/
+
+Restriction can be waived by contacting info@activityowner.com
