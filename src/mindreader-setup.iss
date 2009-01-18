@@ -164,12 +164,13 @@ const
 }
   DIR_UNKNOWN = '';
   DIR_AO_DEAFULT = 'AO';
+  MEMO_INDENT = '  ';
 
 var
 { Custom Wizard Pages
 }
   MmVersionPage: TInputOptionWizardPage;
-  CheckInstalledPage: TInputOptionWizardPage;
+  CheckInstalledPage: TOutputMsgMemoWizardPage;
 
 
 { MmVersion_Indexes
@@ -361,17 +362,23 @@ end;
 
 procedure CreateCheckInstalledPage;
 var
-  CheckListBox: TNewCheckListBox;
+  msg: String;
 begin
-  CheckInstalledPage := CreateInputOptionPage(MmVersionPage.ID,
-    'Dependancies', 'AO needs some some other applications to enable all functionality',
-    'Setup has found the following results (unchecked means not detected).',
-    True, False);
+  msg := ''
+  if not CheckInstalledRM then
+    msg := 'ResultsManager' #13
+      + MEMO_INDENT + 'Visit: www.gyronix.com' #13#13 + msg;
 
-  CheckListBox := CheckInstalledPage.CheckListBox;
-  CheckListBox.AddCheckBox('MindManager', 'Required', 0, true, false, false, false, nil);
-  CheckListBox.AddCheckBox('ResultsManager', 'Required', 0, checkInstalledRM, false, false, false, nil);
-  CheckListBox.AddCheckBox('GyroQ', 'Required', 0, checkInstalledGyroQ, false, false, false, nil);
+  if not CheckInstalledGyroQ then
+    msg := 'GyroQ' #13
+      + MEMO_INDENT + 'Visit: www.gyronix.com' #13#13 + msg;
+
+  msg = msg + 'See www.activityowner.com for more information';
+
+  CheckInstalledPage := CreateOutputMsgMemoPage(MmVersionPage.ID,
+    'Dependancies', 'Some other applications are required to enable all functionality',
+    'Setup could not detect the following applications. They are not required, but highly recommended.',
+    msg);
 end;
 
 { ==========
@@ -441,6 +448,16 @@ begin
   case CurPageID of
     wpSelectDir:
 	  UpdateSelectDirPage;
+  end;
+end;
+
+function ShouldSkipPage(PageID: Integer): Boolean;
+{ Skip these pages?
+}
+begin
+  case PageId of
+    CheckInstalledPage.ID:
+      Result := CheckInstalled;
   end;
 end;
 
