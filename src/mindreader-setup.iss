@@ -164,7 +164,7 @@ const
 }
   DIR_UNKNOWN = '';
   DIR_AO_DEAFULT = 'AO';
-  MEMO_INDENT = '  ';
+  MEMO_INDENT = '      ';
 
 var
 { Custom Wizard Pages
@@ -373,12 +373,15 @@ begin
     msg := 'GyroQ' #13
       + MEMO_INDENT + 'Visit: www.gyronix.com' #13#13 + msg;
 
-  msg = msg + 'See www.activityowner.com for more information';
+  msg := msg + 'See www.activityowner.com for more information';
 
   CheckInstalledPage := CreateOutputMsgMemoPage(MmVersionPage.ID,
     'Dependancies', 'Some other applications are required to enable all functionality',
-    'Setup could not detect the following applications. They are not required, but highly recommended.',
+    'Setup could not detect the following applications.'#13 They are not required, but highly recommended.',
     msg);
+
+  CheckInstalledPage.RichEditViewer.Color := clBtnFace;
+
 end;
 
 { ==========
