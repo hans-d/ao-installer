@@ -4,6 +4,7 @@
 ; History:
 ; Jan 18, 09 - Hans.Donner@pobox.com
 ;	- adjusted layout (cleaner)
+;   - restart GyroQ if not running
 ; Jan 17, 09 - Hans.Donner@pobox.com
 ;   - add MM 6 support
 ;   - fixed a 'sleeping' bug regarding moment of version checking
@@ -85,6 +86,10 @@ Name: english; MessagesFile: compiler:Default.isl
 [Messages]
 SelectDirBrowseLabel=This is a fixed location (AO) under your MyMaps folder.
 
+[Run]
+Filename: {reg:HKLM\Software\Gyronix\GyroQ,}; Description: Restart GyroQ; Flags: runasoriginaluser runminimized skipifdoesntexist postinstall waituntilidle; Tasks: gyroQ; Components: 
+
+
 [Types]
 ; provide packages to choose from; these have default components (see below)
 Name: Full; Description: Full installation
@@ -114,7 +119,6 @@ Source: {#AppSourceDirMindReaderConfigLegacy}\\*; DestDir: {app}\\..; Components
 Source: {#AppSourceDirMindReaderSample}\\*; DestDir: {app}; Components: sample; Flags: skipifsourcedoesntexist ignoreversion recursesubdirs createallsubdirs
 Source: {#AppSourceDirMindReaderSampleLegacy}\\*; DestDir: {app}\\..; Components: sample; Flags: skipifsourcedoesntexist ignoreversion recursesubdirs createallsubdirs
 Source: {#AppSourceDirGyroQConfig}\\*; DestDir: {app}\\..\GyroQ; Tasks: gyroQ; Flags: ignoreversion recursesubdirs createallsubdirs uninsneveruninstall
-
 
 [Code]
 {
@@ -156,6 +160,9 @@ const
   REGPATH_GYRONIX_ACTIVATOR_SETTINGS = 'Software\Gyronix\GyroActivator\Settings';
   REGVAL_GYRONIX_ACTIVATOR_SETTINGS_MINDMANGER = 'MindManager';
 
+  REGPATH_GYRONIX_GYROQ = 'Software\Gyronix\GyroQ';
+  REGVAL_GYRONIX_GYROQ = '';
+
   REGPATH_GYRONIX_GYROQ_SETTINGS = 'Software\Gyronix\GyroQ\Settings';
   REGVAL_GYRONIX_GYROQ_SETTINGS_WKGDIR = 'WkgDir';
 
@@ -185,10 +192,6 @@ var
   MmVersion_Index8,
   MmVersion_IndexUnknown: Integer;
 
-// TODO:
-// - check for RM
-// - check for GyroQ
-// - rerun GyroQ
 
 // TODO:
 // Use registry for correct placing of GyroQ ini file:
