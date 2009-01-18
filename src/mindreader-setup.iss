@@ -6,6 +6,8 @@
 ;   - add MM 6 support
 ;   - fixed a 'sleeping' bug regarding moment of version checking
 ;   - checks if MyMaps can be found
+;   - non-editable destination dir
+;   - check for used apps (RM, Gyroq)
 ; Jan 16, 09 - Hans.Donner@pobox.com
 ;   - spelling and correct GyroQ
 ; Jan 12, 09 - Hans.Donner@pobox.com
@@ -17,6 +19,24 @@
 ;   - First version
 
 ; uses http://www.vincenzo.net/isxkb/index.php?title=PSVince to detect running files
+
+; Install flow;
+; - Welcome
+; - License Agreement - LicenseFile is set
+; - Information - InfoBeforeFile is set
+; - MmVersion - User selects used MmVersion, perform checks
+; - Select Destination Location - Shown, but not able to change the Destination
+; - Select Components
+; Select Start Menu Folder
+; Shown if there are any [Icons] entries, but can be disabled via DisableProgramGroupPage.
+; - Select Tasks
+; - Ready to Install
+; - Preparing to Install - Normally, Setup will never stop on this page.
+; - Installing
+; Information
+; Shown if InfoAfterFile is set.
+; - Setup Completed
+
 
 ; ======
 
@@ -93,37 +113,12 @@ Source: {#AppSourceDirMindReaderSample}\\*; DestDir: {app}; Components: sample; 
 Source: {#AppSourceDirMindReaderSampleLegacy}\\*; DestDir: {app}\\..; Components: sample; Flags: skipifsourcedoesntexist ignoreversion recursesubdirs createallsubdirs
 Source: {#AppSourceDirGyroQConfig}\\*; DestDir: {app}\\..\GyroQ; Tasks: gyroQ; Flags: ignoreversion recursesubdirs createallsubdirs uninsneveruninstall
 
-// TODO: 
-// Use registry for correct placing of GyroQ ini file: 
-// HKCU | Software\Gyronix\GyroQ\Settings | WkgDir: 
-// {code: ...}
-
 
 [Code]
 {
  As this is Pascal scripting, procedures/functions must
  first be declared/defined before they can be called!
 }
-
-function IsModuleLoaded(modulename: String ):  Boolean;
-  external 'IsModuleLoaded@files:psvince.dll stdcall';
-  // from http://www.vincenzo.net/isxkb/index.php?title=PSVince
-
-var
-{ Custom Wizard Pages
-}
-  MmVersionPage: TInputOptionWizardPage;
-  ConfirmDirPage: TInputDirWizardPage;
-
-{ MmVersion_Indexes
-  - keep in sync with other MmVersion functions/procedures/constants
-  - values are set in CreateMmVersionPage
-  - used for 'translation'
-}
-  MmVersion_Index6,
-  MmVersion_Index7,
-  MmVersion_Index8,
-  MmVersion_IndexUnknown: Integer;
 
 const
 { Tasks used
@@ -152,33 +147,60 @@ const
 
 { Registry settings for lookup
 }
-  REG_GYRONIX_ACTIVATOR_SETTINGS_PATH = 'Software\Gyronix\GyroActivator\Settings';
-  REG_GYRONIX_ACTIVATOR_SETTINGS_MINDMANGER = 'MindManager';
+  REGPATH_MINDJET_SETTINGS_PREFIX = 'Software\Mindjet\MindManager\';
+  REGPATH_MINDJET_SETTINGS_SUFFIX = '\Settings';
+  REGVAL_MINDJET_SETTINGS_DOCUMENTDIRECTORY = 'DocumentDirectory';
 
-  REG_MINDJET_SETTINGS_PREFIX_PATH = 'Software\Mindjet\MindManager\';
-  REG_MINDJET_SETTINGS_SUFFIX_PATH = '\Settings';
-  REG_MINDJET_SETTINGS_DOCUMENTDIRECTORY = 'DocumentDirectory';
+  REGPATH_GYRONIX_ACTIVATOR_SETTINGS = 'Software\Gyronix\GyroActivator\Settings';
+  REGVAL_GYRONIX_ACTIVATOR_SETTINGS_MINDMANGER = 'MindManager';
+
+  REGPATH_GYRONIX_GYROQ_SETTINGS = 'Software\Gyronix\GyroQ\Settings';
+  REGVAL_GYRONIX_GYROQ_SETTINGS_WKGDIR = 'WkgDir';
+
+  REGPATH_GYRONIX_RESULTSMANAGER_SETTINGS = 'Software\Gyronix\ResultsManager\Settings';
+  REGVAL_GYRONIX_RESULTSMANAGER_SETTINGS_PATH = 'Path';
 
 { Various
 }
   DIR_UNKNOWN = '';
   DIR_AO_DEAFULT = 'AO';
 
+var
+{ Custom Wizard Pages
+}
+  MmVersionPage: TInputOptionWizardPage;
+  CheckInstalledPage: TInputOptionWizardPage;
+
+
+{ MmVersion_Indexes
+  - keep in sync with other MmVersion functions/procedures/constants
+  - values are set in CreateMmVersionPage
+  - used for 'translation'
+}
+  MmVersion_Index6,
+  MmVersion_Index7,
+  MmVersion_Index8,
+  MmVersion_IndexUnknown: Integer;
+
 // TODO:
 // - check for RM
 // - check for GyroQ
 // - rerun GyroQ
 
+// TODO:
+// Use registry for correct placing of GyroQ ini file:
+// HKCU | Software\Gyronix\GyroQ\Settings | WkgDir:
+// {code: ...}
+
 { ==========
-  Running Apps
+  External
   ==========
 }
-function AllAppsClosed(): Boolean;
-{ Check if all related apps are not running
-}
-begin
-  Result := Not(IsTaskSelected(TASK_GYROQ) And IsModuleLoaded(RUNNING_GYROQ));
-end;
+
+function IsModuleLoaded(modulename: String ):  Boolean;
+  external 'IsModuleLoaded@files:psvince.dll stdcall';
+  // from http://www.vincenzo.net/isxkb/index.php?title=PSVince
+
 
 { ==========
   MmVersion
@@ -219,7 +241,7 @@ var
   MmVersion: String;
 begin
   if not RegQueryStringValue(HKCU,
-    REG_GYRONIX_ACTIVATOR_SETTINGS_PATH, REG_GYRONIX_ACTIVATOR_SETTINGS_MINDMANGER,
+    REGPATH_GYRONIX_ACTIVATOR_SETTINGS, REGVAL_GYRONIX_ACTIVATOR_SETTINGS_MINDMANGER,
     MmVersion) then begin
       MmVersion := MMVERSION_STRING_UNKNOWN;
   end;
@@ -264,12 +286,12 @@ var
   MindjetPathKeyName,
   DocDir: String;
 begin
-  MindjetPathKeyName := REG_MINDJET_SETTINGS_PREFIX_PATH
+  MindjetPathKeyName := REGPATH_MINDJET_SETTINGS_PREFIX
     + TranslateMmVersion_Index(MmVersionPage.SelectedValueIndex)
-    + REG_MINDJET_SETTINGS_SUFFIX_PATH;
+    + REGPATH_MINDJET_SETTINGS_SUFFIX;
 
   if not RegQueryStringValue(HKCU,
-    MindjetPathKeyName, REG_MINDJET_SETTINGS_DOCUMENTDIRECTORY,
+    MindjetPathKeyName, REGVAL_MINDJET_SETTINGS_DOCUMENTDIRECTORY,
     DocDir) then begin
       DocDir := DIR_UNKNOWN;
   end;
@@ -277,37 +299,12 @@ begin
   Result := DocDir;
 end;
 
-function CheckMyMapsDir(): Boolean;
-{ Check if we really have a MyMap dir
-  Also sets the ConfirmDirPage
-}
-begin
-  Result := False;
-  ConfirmDirPage.Values[0] := getMyMapsDir;
-  if ConfirmDirPage.Values[0] <> DIR_UNKNOWN then
-    Result := True;
-end;
-
-procedure createConfirmDirPage;
-{ Confirm MyMaps locations
-}
-begin
-  ConfirmDirPage := CreateInputDirPage(MmVersionPage.ID,
-    'Confirm MyMaps Directory', 'Is this the location of your MyMaps Directory?',
-    'Setup assumes your MyMaps is the following folder.'#13#10 +
-    'If you specify another folder as the MyMaps folder, AO might not work!',
-    False, 'New Folder');
-
-  ConfirmDirPage.Add('To continue, click Next. If you would like to select a different folder, click Browse.');
-
-end;
-
 procedure UpdateSelectDirPage;
 { Adjust SelectDir
 }
 begin
   // Set Default value
-  WizardForm.DirEdit.Text := addbackslash(ConfirmDirPage.Values[0]) + DIR_AO_DEAFULT;
+  WizardForm.DirEdit.Text := addbackslash(getMyMapsDir) + DIR_AO_DEAFULT;
 
   // hide the Browse button
   WizardForm.DirBrowseButton.Visible := false;
@@ -315,6 +312,66 @@ begin
   // Edit box for folder is non-editable
   WizardForm.DirEdit.Enabled := false;
 
+end;
+
+{ ==========
+  Checking Apps / Settings
+  ==========
+}
+function AllAppsClosed(): Boolean;
+{ Check if all related apps are not running
+}
+begin
+  Result := Not(IsTaskSelected(TASK_GYROQ) And IsModuleLoaded(RUNNING_GYROQ));
+end;
+
+function CheckMyMaps(): Boolean;
+var
+  regPath,
+  temp: String;
+begin
+  regPath := REGPATH_MINDJET_SETTINGS_PREFIX
+    + TranslateMmVersion_Index(MmVersionPage.SelectedValueIndex)
+    + REGPATH_MINDJET_SETTINGS_SUFFIX;
+
+  Result:= RegQueryStringValue(HKCU,
+    regPath, REGVAL_MINDJET_SETTINGS_DOCUMENTDIRECTORY, temp);
+end;
+
+function CheckInstalledRM(): Boolean;
+var
+  temp: String;
+begin
+  Result:= RegQueryStringValue(HKCU,
+    REGPATH_GYRONIX_RESULTSMANAGER_SETTINGS, REGVAL_GYRONIX_RESULTSMANAGER_SETTINGS_PATH, temp);
+end;
+
+function CheckInstalledGyroQ(): Boolean;
+var
+  temp: String;
+begin
+  Result:= RegQueryStringValue(HKCU,
+    REGPATH_GYRONIX_GYROQ_SETTINGS, REGVAL_GYRONIX_GYROQ_SETTINGS_WKGDIR, temp);
+end;
+
+function CheckInstalled(): Boolean;
+begin
+  Result := CheckInstalledGyroQ and CheckInstalledRM;
+end;
+
+procedure CreateCheckInstalledPage;
+var
+  CheckListBox: TNewCheckListBox;
+begin
+  CheckInstalledPage := CreateInputOptionPage(MmVersionPage.ID,
+    'Dependancies', 'AO needs some some other applications to enable all functionality',
+    'Setup has found the following results (unchecked means not detected).',
+    True, False);
+
+  CheckListBox := CheckInstalledPage.CheckListBox;
+  CheckListBox.AddCheckBox('MindManager', 'Required', 0, true, false, false, false, nil);
+  CheckListBox.AddCheckBox('ResultsManager', 'Required', 0, checkInstalledRM, false, false, false, nil);
+  CheckListBox.AddCheckBox('GyroQ', 'Required', 0, checkInstalledGyroQ, false, false, false, nil);
 end;
 
 { ==========
@@ -328,7 +385,7 @@ procedure InitializeWizard;
 begin
   // Create additional wizard pages
   CreateMmVersionPage;
-  CreateConfirmDirPage;
+  CreateCheckInstalledPage;
 end;
 
 procedure RegisterPreviousData(PreviousDataKey: Integer);
@@ -350,16 +407,19 @@ begin
 
   // MmVersion is unknown
     MmVersionPage.ID:
-      if MmVersionPage.SelectedValueIndex = MmVersion_IndexUnknown then begin
-          Result := False;
-          MsgBox('Only the listed version of MindManager are supported' #13#13
-            'Please select one of the listed versions or Cancel thet setup.', mbInformation, MB_OK);
-      end else
-        if Not CheckMyMapsDir then begin
-          Result := False;
-          MsgBox('Could not locate information for the selected MindManager version!' #13#13
-			'Please select an installed version.', mbError, MB_OK);
-        end;
+      begin
+        if MmVersionPage.SelectedValueIndex = MmVersion_IndexUnknown then begin
+            Result := False;
+            MsgBox('Only the listed version of MindManager are supported' #13#13
+              'Please select one of the listed versions or Cancel thet setup.', mbInformation, MB_OK);
+          end
+        else
+          if Not CheckMyMaps then begin
+            Result := False;
+            MsgBox('Could not locate information for the selected MindManager version!' #13#13
+			  'Please select an installed version.', mbError, MB_OK);
+          end;
+      end;
 
   // Apps are running that must be closed down first
   // TODO: setup to re-start them?
