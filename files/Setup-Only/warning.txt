@@ -1,5 +1,10 @@
-This set of tools is intended to enhance use of MindManager, ResultsManager, and or  GyroQ.
-It has been created as a "hobby" project and is continuously improved. As a  result occasional bugs and glitches will emerge.  
+This setup will install a set of tools that are itended to enhance use of MindManager, ResultsManager,and/or GyroQ.
+
+This is a "hobby" project and the developers are continually improving it. Occasional bugs and glitches may appear upon updates and as new features are added and the software is improved.  
+
+
 
 Install and use this software at your own risk.
-Make sure to backup your MyMaps folder, including GyroQ.ini.
+
+
+It is strongly recommended that users backup the My Maps folder and the GyroQ.ini file before installing or upgrading this software.
