@@ -6,7 +6,7 @@
 #define AppURL 			= "http://www.ActivityOwner.com/"
 
 #define AppSetupFile 	= "setup"
-#define AppSetupDir 	= "output"
+#define AppSetupDir 	= "..\dist"
 
 ; set-up only files
 #define LicenseFile = "..\files\Setup-Only\license.txt"

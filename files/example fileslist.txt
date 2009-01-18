@@ -1,0 +1,89 @@
+ Map van <....>\files
+
+13-01-2009  14:06    <DIR>          .
+13-01-2009  14:06    <DIR>          ..
+12-01-2009  11:07    <DIR>          Configuration
+12-01-2009  11:07    <DIR>          Configuration-Legacy
+12-01-2009  19:50    <DIR>          GyroQ
+12-01-2009  19:51    <DIR>          MindReader
+12-01-2009  19:49    <DIR>          MindReader-Legacy
+12-01-2009  11:07    <DIR>          Sample
+01-01-2009  17:25    <DIR>          Sample-Legacy
+12-01-2009  09:12    <DIR>          Setup-Only
+               0 bestand(en)                0 bytes
+
+ Map van <....>\files\Configuration
+
+12-01-2009  11:07    <DIR>          .
+12-01-2009  11:07    <DIR>          ..
+               0 bestand(en)                0 bytes
+
+ Map van <....>\files\Configuration-Legacy
+
+12-01-2009  11:07    <DIR>          .
+12-01-2009  11:07    <DIR>          ..
+17-12-2007  21:08            25.228 Daily Capture Map.mmap
+27-01-2008  13:19            50.487 mindreader.mmap
+               2 bestand(en)           75.715 bytes
+
+ Map van <....>\files\GyroQ
+
+12-01-2009  19:50    <DIR>          .
+12-01-2009  19:50    <DIR>          ..
+12-01-2009  19:50            12.156 GyroQ.ini
+               1 bestand(en)           12.156 bytes
+
+ Map van <....>\files\MindReader
+
+12-01-2009  19:51    <DIR>          .
+12-01-2009  19:51    <DIR>          ..
+12-01-2009  19:51             1.273 aomenu.mmbas
+12-01-2009  19:51             3.555 ao_age_analysis.mmbas
+12-01-2009  19:51            10.495 ao_basecamp_import.mmbas
+12-01-2009  19:51            21.550 ao_common.mmbas
+12-01-2009  19:51             6.194 ao_mindranker.mmbas
+12-01-2009  19:51            37.792 Ao_next_action_analysis.mmbas
+12-01-2009  19:51               429 ao_pct_done.mmbas
+12-01-2009  19:51             3.358 ao_send_branch.mmbas
+12-01-2009  19:51               344 ao_send_branch_by_subtopic.mmbas
+12-01-2009  19:51             1.766 GyroQReader.mmbas
+12-01-2009  19:51            11.733 map2table.mmbas
+12-01-2009  19:51             4.337 map2wiki.mmbas
+12-01-2009  19:51            13.971 mark_task_complete.mmbas
+12-01-2009  19:51             1.148 MindReaderCall.mmbas
+12-01-2009  19:51             5.157 mindreadertags.ini
+12-01-2009  19:51             1.873 mindreader_harvest_links.mmbas
+12-01-2009  19:51            44.873 MindReader_Syntax.mmap
+12-01-2009  19:51             6.267 next-action-verb-analysis.mmbas
+12-01-2009  19:51             2.867 next_action_verbs_completed_log.mmbas
+12-01-2009  19:51             1.842 rss_to_intray.mmbas
+              20 bestand(en)          180.824 bytes
+
+ Map van <....>\files\MindReader-Legacy
+
+12-01-2009  19:49    <DIR>          .
+12-01-2009  19:49    <DIR>          ..
+12-01-2009  19:49            45.316 MindReaderNLP.mmbas
+12-01-2009  19:49            11.828 MindReaderOpen.mmbas
+               2 bestand(en)           57.144 bytes
+
+ Map van <....>\files\Sample
+
+12-01-2009  11:07    <DIR>          .
+12-01-2009  11:07    <DIR>          ..
+               0 bestand(en)                0 bytes
+
+ Map van <....>\files\Sample-Legacy
+
+01-01-2009  17:25    <DIR>          .
+01-01-2009  17:25    <DIR>          ..
+05-07-2007  14:15            23.370 mrsample.mmap
+               1 bestand(en)           23.370 bytes
+
+ Map van <....>\files\Setup-Only
+
+12-01-2009  09:12    <DIR>          .
+12-01-2009  09:12    <DIR>          ..
+12-01-2009  09:12               248 license.txt
+12-01-2009  10:28               333 warning.txt
+               2 bestand(en)              581 bytes

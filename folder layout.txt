@@ -1,0 +1,31 @@
+Root
+====
+build	- during BUILD some files are generated and placed here
+config  - local CONFIGuration can be done here
+dist	- holds the generated setup file, ready for DISTrribution
+files	- initial point of entry for the FILES to be included in the install
+lib	- LIBrary of external files required by setup
+src	- setup SouRCEe, here is where the logic lives
+
+Files
+=====
+Setup-Only	- contains some textfiles used by the installer
+
+
+suggested layout, as used in the initial configuration
+
+- for placement in the AO folder:
+
+Configuration	- Configuration files that should not override older version
+MindReader	- the magic
+Sample		- some samples
+
+- additional:
+
+GyroQ		- gyroq ini (about to disappear)
+
+- legacy, for placement in the mymaps folder (above AO);
+
+Configuration-Legacy
+MindReader-Legacy
+Sample-Legacy

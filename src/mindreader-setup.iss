@@ -2,6 +2,8 @@
 ;   see www.activityowner.com for the AO Tools
 
 ; History:
+; Jan 18, 09 - Hans.Donner@pobox.com
+;	- adjusted layout (cleaner)
 ; Jan 17, 09 - Hans.Donner@pobox.com
 ;   - add MM 6 support
 ;   - fixed a 'sleeping' bug regarding moment of version checking
@@ -41,13 +43,13 @@
 ; ======
 
 ; seperate installer logic from installer configuration (where to find stuff etc.)
-#include "mindreader-setup-config.iss"
+#include "..\\config\mindreader-setup-config.iss"
 
 ; make sure builds are uniquely identified
 ; from: http://www.vincenzo.net/isxkb/index.php?title=Incrementing_build_number_every_time_the_script_is_compiled
-#define BuildNum Int(ReadIni(SourcePath	+ "\\BuildInfo.ini","Info","Build","0"))
+#define BuildNum Int(ReadIni(SourcePath	+ "\\..\\Build\\BuildInfo.ini","Info","Build","0"))
 #expr BuildNum = BuildNum + 1
-#expr WriteIni(SourcePath + "\\BuildInfo.ini","Info","Build", BuildNum)
+#expr WriteIni(SourcePath + "\\..\\Build\BuildInfo.ini","Info","Build", BuildNum)
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -101,7 +103,7 @@ Name: gyroQ; Description: REPLACE GyroQ tags with MindReader default setup
 [Files]
 ; the actual files used in the setup process
 ; first the files directly needed by the setup
-Source: psvince.dll; Flags: dontcopy
+Source: ..\\lib\\psvince.dll; Flags: dontcopy
 
 ; all the other files
 ; specify locations in the variables (config file)
@@ -377,7 +379,7 @@ begin
 
   CheckInstalledPage := CreateOutputMsgMemoPage(MmVersionPage.ID,
     'Dependancies', 'Some other applications are required to enable all functionality',
-    'Setup could not detect the following applications.'#13 They are not required, but highly recommended.',
+    'Setup could not detect the following applications.'#13 'They are not required, but highly recommended.',
     msg);
 
   CheckInstalledPage.RichEditViewer.Color := clBtnFace;
@@ -476,7 +478,7 @@ end;
   - must be at the end of all coding to give a complete file
 }
 #ifdef Debug
-  #expr SaveToFile(AddBackslash(SourcePath) + "Preprocessed.iss")
+  #expr SaveToFile(AddBackslash(SourcePath) + "..\\Build\\Preprocessed.iss")
 #endif
 
 // place nothing below!
